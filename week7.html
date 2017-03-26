@@ -2,6 +2,33 @@
 <html lang="en">
     <head>
          <style type="text/css">
+            
+			
+			div.centre
+            {
+				width: 1000px;
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+            }
+
+			div.border
+			{
+				border: 2px solid lightgray;
+			}
+
+			div.tooltip {	
+				position: absolute;			
+				text-align: center;			
+				width: 100px;					
+				height: 35px;					
+				padding: 2px;				
+				font: 10px sans-serif;		
+				background: lightsteelblue;	
+				border: 0px;		
+				border-radius: 8px;			
+				pointer-events: none;			
+			}
            	.axis path,
 			.axis line {
 				fill: none;
@@ -22,17 +49,18 @@
         <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
     </head>
     <body>
-        <h1>Visualization 1</h1>
+        <div class='centre'>
+			<h1>Visualization 1</h1>
+			<p>Scatter plot: combination of vehicle theft and prostitution per year</p>
+			<div id="viz1" class='border'></div>
 
-        <p>Scatter plot: combination of vehicle theft and prostitution per year</p>
+			<p>
+			<label for="amount">År:</label>
+			<input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+			</p>
+			<div id="slider-range-max"></div>
+        </div>
 
-        <div id="viz1"></div>
-
-        <p>
-        <label for="amount">År:</label>
-        <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-        </p>
-        <div id="slider-range-max"></div>
     </body>
 
     <script type="text/javascript">
@@ -70,7 +98,7 @@
         {
 			//Width and height
 			var w = 1000;
-			var h = 400;
+			var h = 600;
 			
             var padding = 50;
 
@@ -80,32 +108,37 @@
 			//		.range([padding, w - padding * 2]);
 
 			xScale = d3.scale.linear()
-					.domain([0, 1000])
-					.range([padding, w - padding * 2]);
+				.domain([0, 1000])
+				.range([padding, w - padding * 2]);
 
 			//yScale = d3.scale.linear()
 			//		.domain([0, d3.max(dataset, function(d) { return d.theft; })])
 			//		.range([h - padding , padding]);
 
 			yScale = d3.scale.linear()
-					.domain([0, 3000])
-					.range([h - padding , padding]);
+				.domain([0, 3000])
+				.range([h - padding , padding]);
 	
             rScale = d3.scale.linear()
-                    .domain([0, d3.max(dataset, function(d) { return d.prostitution + d.theft; })])
-                    .range([2, 8]);
+				.domain([0, d3.max(dataset, function(d) { return d.prostitution + d.theft; })])
+				.range([2, 8]);
 
 			// Define X axis
             var xAxis = d3.svg.axis()
-							  .scale(xScale)
-							  .orient("bottom")
-							  .ticks(8);
+				.scale(xScale)
+				.orient("bottom")
+				.ticks(8);
 
 			// Define Y axis
 			var yAxis = d3.svg.axis()
-							  .scale(yScale)
-							  .orient("left")
-							  .ticks(7);
+				.scale(yScale)
+				.orient("left")
+				.ticks(7);
+
+			// Define the div for the tooltip
+			var div = d3.select("body").append("div")	
+    			.attr("class", "tooltip")				
+    			.style("opacity", 0);
 
 			//Create SVG element
 			var svg = d3.select("#viz1")
@@ -114,35 +147,48 @@
 						.attr("height", h);
 
 			svg.selectAll("circle")
-			   .data(dataset)
-			   .enter()
-			   .append("circle")
-			   .attr("cx", function(d) {
+			   	.data(dataset)
+			   	.enter()
+			   	.append("circle")
+			   	.attr("cx", function(d) {
 			   		return xScale(d.prostitution);
-			   })
-			   .attr("cy", function(d) {
+			   	})
+			   	.attr("cy", function(d) {
 			   		return yScale(d.theft);
-			   })
-			   .attr("r", function(d) {
+			   	})
+			   	.attr("r", function(d) {
 			   		return rScale(d.prostitution + d.theft);
-			   });
+			   	})
+        		.on("mouseover", function(d) {		
+            		div.transition()		
+                		.duration(200)		
+                		.style("opacity", .9);		
+            	
+					div	.html(d.district + "<br/>Prostitution: "  + d.prostitution + "<br/>Theft: "  + d.theft)	
+                		.style("left", (d3.event.pageX) + "px")		
+                		.style("top", (d3.event.pageY - 28) + "px");	
+            	})					
+        		.on("mouseout", function(d) {		
+            		div.transition()		
+                		.duration(500)		
+                		.style("opacity", 0) });
 
 			svg.selectAll("text")
-			   .data(dataset)
-			   .enter()
-			   .append("text")
-			   .text(function(d) {
+			   	.data(dataset)
+			   	.enter()
+			   	.append("text")
+			   	.text(function(d) {
 			   		return d.district;
-			   })
-			   .attr("x", function(d) {
+			   	})
+			   	.attr("x", function(d) {
 			   		return xScale(d.prostitution);
-			   })
-			   .attr("y", function(d) {
+			   	})
+			   	.attr("y", function(d) {
 			   		return yScale(d.theft) - 10;
-			   })
+			   	})
 			   .attr("font-family", "sans-serif")
 			   .attr("font-size", "9px")
-			   .attr("fill", "red");
+			   .attr("fill", "lightsteelblue");
 
             //Create X axis
 			svg.append("g")
@@ -181,6 +227,7 @@
 			svg.selectAll("circle")
 			   .data(dataset)
                .transition()
+			   .duration(500)
 			   .attr("cx", function(d) {
 			   		return xScale(d.prostitution);
 			   })
@@ -201,11 +248,12 @@
 			   		return xScale(d.prostitution);
 			   })
 			   .attr("y", function(d) {
-			   		return yScale(d.theft) - 10;
+			   		return yScale(d.theft) - 8;
 			   })
-			   .attr("font-family", "sans-serif")
-			   .attr("font-size", "9px")
-			   .attr("fill", "red");
+			   //.attr("font-family", "sans-serif")
+			   //.attr("font-size", "9px")
+			   //.attr("fill", "lightsteelblue")
+			   ;
         }
 
         $( function() {
