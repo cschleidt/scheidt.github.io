@@ -40,6 +40,18 @@
 				font-family: sans-serif;
 				font-size: 11px;
 			}
+
+			button {
+				border: 1px solid #f44c0e;
+				color: #fff;
+				background: lightgray;
+				padding: 10px 20px;
+				margin: 15px 10px;
+				border-radius: 3px;
+			}
+			button:hover {
+				background: lightblue;
+			}
         </style>
         <meta charset="utf-8">
         <title>Assignment 2</title>
@@ -91,7 +103,7 @@ Additionally they are clustered by density, using K-means. By clicking the butto
 The large circles represent the center of each cluster and the closer to this center the circles are, the more likely they are to be related.</p>
 
 			<div id="div1" class='border'></div>
-			<div id="div2" style="padding-left:30%">
+			<div id="div2" style="padding-left:18%">
 				<button type="button" onmouseover="over(2)" onmouseout="out()" onclick='updatek(2)'>Click for k2</button>
 				<button type="button" onmouseover="over(3)" onmouseout="out()" onclick='updatek(3)'>Click for k3</button>
 				<button type="button" onmouseover="over(4)" onmouseout="out()" onclick='updatek(4)'>Click for k4</button>
