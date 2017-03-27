@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+         <style type="text/css">
+
+            div.centre
+            {
+            width: 200px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            }
+        </style>
+        <meta charset="utf-8">
+        <title>Assignment 2B</title>
+        <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
+    </head>
+    <body>
+        <h1>Visualizing geodata</h1>
+
+        <p>Scatter plot: combination of vehicle theft and prostitution per year</p>
+
+
+        <div id='centre'>
+        <div id="viz1"></div>
+        </div>
+        
+		 <div id="div2" style="padding-left:30%">
+			<button type="button" onmouseover="over(2)" onmouseout="out()" onclick='updatek(2)'>Click for k2</button>
+			<button type="button" onmouseover="over(3)" onmouseout="out()" onclick='updatek(3)'>Click for k3</button>
+			<button type="button" onmouseover="over(4)" onmouseout="out()" onclick='updatek(4)'>Click for k4</button>
+			<button type="button" onmouseover="over(5)" onmouseout="out()" onclick='updatek(5)'>Click for k5</button>
+			<button type="button" onmouseover="over(6)" onmouseout="out()" onclick='updatek(6)'>Click for k6</button>
+		 </div>    </body>
+
+    <script type="text/javascript">
+
+        function over(kvalue)
+        {
+            _hoverKvalue = _Kvalue;
+            updatecrimedata(kvalue);
+        }
+
+        function out()
+        {
+            updatecrimedata(_hoverKvalue);
+        }
+
+        function updatek(kvalue)
+        {
+            _hoverKvalue = kvalue;
+            updatecrimedata(kvalue);
+        }
+
+        //Width and height
+		var w = 900;
+		var h = 800;
+
+        var _Kvalue = 2;
+        var _hoverKvalue;
+
+        var dataset;
+
+        //Create SVG element    
+		var svg = d3.select("#viz1")
+					.append("svg")
+					.attr("width", w)
+					.attr("height", h)
+                    .append("g")
+    .attr("transform", "translate(30,30)");       
+        
+        var projection = d3.geo.mercator()
+            .center([-122.433701, 37.767683])
+            .scale(250000)
+            .translate([w / 2, h / 2]);
+
+        var path = d3.geo.path().projection(projection);
+
+        d3.json("sfpd.json", function(json) {
+            svg.selectAll("path")
+            .data(json.features)
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .style({'fill': '#B10000', 'fill-opacity': 0.3})
+            .style({'stroke-width': 1, 'stroke': '#B10000'})
+            .on('mouseover', function(d, i) {
+                var currentState = this;
+                d3.select(this).style('fill-opacity', .7);
+            })
+            .on('mouseout', function(d, i) {
+                d3.selectAll('path')
+                    .style({
+                        'fill-opacity':.3
+                    });
+            });
+
+            getcrimedata(_Kvalue);
+        });
+
+        // Define linear scale for output
+        var color = d3.scale.linear()
+			  .range(["rgb(213,222,217)","rgb(69,173,168)","rgb(84,36,55)","rgb(217,91,67)", "orange"]);
+        color.domain([0,1,2,3,4,5])
+
+        function getcrimedata(kvalue)
+        {   
+            _Kvalue = kvalue;
+
+            d3.csv("ass2.csv", function(error, data) {
+
+                dataset = data;
+
+                svg.selectAll("circle")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", function(d) {
+                            return projection([d.x, d.y])[0];
+                    })
+                    .attr("cy", function(d) {
+                            return projection([d.x, d.y])[1];
+                    })
+                    .attr("r", function(d) {
+                        if(d.cen == 0)
+                            return 5;
+                        else if(d.cen == kvalue)
+                            return 20;
+                        else
+                            return 0;
+                    })                    
+                    //.style("opacity", 0.75)
+                   	.style("fill", function(d) {
+                        if(d.cen == kvalue) return "darkgrey";
+
+                        switch(kvalue) {
+						case 2: 
+                            return color(d.k2);
+						case 3:
+                            return color(d.k3);
+						case 4:
+                            return color(d.k4);
+						case 5:
+                            return color(d.k5);
+						case 6:
+                            return color(d.k6);
+						}
+                    }); 
+            });
+        }
+
+
+        function updatecrimedata(kvalue)
+        {
+            _Kvalue = kvalue;
+
+            svg.selectAll("circle")
+                .data(dataset)
+                .transition()
+                .duration(1000)
+                .ease("linear")
+                //.attr("cx", function(d) {
+                //        return projection([d.x, d.y])[0];
+                //})
+                //.attr("cy", function(d) {
+                //        return projection([d.x, d.y])[1];
+                //})
+                .attr("r", function(d) {
+                    if(d.cen == 0)
+                        return 5;
+                    else if(d.cen == kvalue)
+                        return 20;
+                    else
+                        return 0;
+                }) 
+                //.style("opacity", 0.75)
+                .style("fill", function(d) {
+                    if(d.cen == kvalue) return "darkgrey";
+
+                    switch(kvalue) {
+                    case 2: 
+                        return color(d.k2);
+                    case 3:
+                        return color(d.k3);
+                    case 4:
+                        return color(d.k4);
+                    case 5:
+                        return color(d.k5);
+                    case 6:
+                        return color(d.k6);
+                    }
+                }); 
+        }
+
+
+    </script>    
+</html>
+
+
